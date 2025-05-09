@@ -23,7 +23,7 @@ internal sealed class CreateMemberCommandHandler(
             firstNameResult.Value,
             lastNameResult.Value);
 
-        memberRepository.Add(member);
+        await memberRepository.AddAsync(member);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 

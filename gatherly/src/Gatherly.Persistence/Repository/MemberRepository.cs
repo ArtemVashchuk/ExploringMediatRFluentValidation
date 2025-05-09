@@ -6,18 +6,17 @@ namespace Gatherly.Persistence.Repository;
 
 internal sealed class MemberRepository(ApplicationDbContext dbContext) : IMemberRepository
 {
-    public async Task<Member?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        var members = await dbContext
+    public async Task<Member?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
+        await dbContext
             .Set<Member>()
             .FirstOrDefaultAsync(m => m.Id == id,
                 cancellationToken: cancellationToken);
-        
-        return members;
-    }
 
-    public async Task Add(Member member)
+    public async Task AddAsync(Member member) => await dbContext.Set<Member>().AddAsync(member);
+
+    public async Task<bool> ExistsAsync(string email, CancellationToken cancellationToken = default)
     {
-         await dbContext.Set<Member>().AddAsync(member);
+        return await dbContext.Set<Member>()
+            .AnyAsync(m => m.Email.Value.ToLower() == email.ToLower(), cancellationToken);
     }
 }
