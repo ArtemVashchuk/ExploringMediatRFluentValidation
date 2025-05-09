@@ -11,7 +11,9 @@ namespace Gatherly.Presentation.Controllers;
 public sealed class MembersController(ISender sender) : ApiController(sender)
 {
     [HttpPost]
-    public async Task<IActionResult> RegisterMember([FromBody]RegisterMemberRequest request ,CancellationToken cancellationToken)
+    public async Task<IActionResult> RegisterMember(
+        [FromBody] RegisterMemberRequest request,
+        CancellationToken cancellationToken)
     {
         var command = new CreateMemberCommand(
             request.Email,
@@ -19,14 +21,16 @@ public sealed class MembersController(ISender sender) : ApiController(sender)
             request.LastName);
 
         var result = await Sender.Send(command, cancellationToken);
-        
+
         return result.IsSuccess
             ? Ok()
-            : BadRequest(result.Error);
+            : HandleFailure(result);
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetMemberById(Guid id, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetMemberById(
+        Guid id,
+        CancellationToken cancellationToken)
     {
         var query = new GetMemberByIdQuery(id);
 

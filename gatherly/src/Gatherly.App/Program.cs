@@ -1,5 +1,8 @@
+using FluentValidation;
 using Gatherly.App.Extensions;
+using Gatherly.Application.Behaviors;
 using Gatherly.Persistence;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,14 +17,18 @@ builder
         .AsImplementedInterfaces()
         .WithScopedLifetime());
 
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Gatherly.Application.AssemblyReference.Assembly));
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssembly(Gatherly.Application.AssemblyReference.Assembly));
+
+builder.Services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationPipelineBehavior<,>));
+
+builder.Services.AddValidatorsFromAssembly(Gatherly.Application.AssemblyReference.Assembly, includeInternalTypes: true);
 
 string connectionString = builder.Configuration.GetConnectionString("Database")!;
 
 builder.Services.AddDbContext<ApplicationDbContext>((_, optionsBuilder) =>
 {
     optionsBuilder.UseSqlServer(connectionString)
-        .LogTo(Console.WriteLine)
         .EnableSensitiveDataLogging()
         .EnableDetailedErrors();
 });
